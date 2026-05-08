@@ -492,10 +492,10 @@ const positions = {
   cb1: { x: 155, y: 490, type: "cb",  label: "CB"  },
   cb2: { x: 245, y: 490, type: "cb",  label: "CB"  },
   rb:  { x: 340, y: 470, type: "fb",  label: "RB"  },
-  dm:  { x: 145, y: 370, type: "cdm", label: "CDM" },
-  rcm: { x: 255, y: 370, type: "m",   label: "M"   },
+  dm:  { x: 200, y: 340, type: "cdm", label: "CDM" },
+  rcm: { x: 255, y: 240, type: "m",   label: "M"   },
   lw:  { x:  60, y: 220, type: "wg",  label: "LW"  },
-  cam: { x: 200, y: 240, type: "m",   label: "M"   },
+  cam: { x: 145, y: 240, type: "m",   label: "M"   },
   rw:  { x: 340, y: 220, type: "wg",  label: "RW"  },
   st:  { x: 200, y:  90, type: "st",  label: "ST"  }
 };
@@ -513,15 +513,15 @@ const timeline = [
 
 const opposition = [
   { name: "George",        pos: "gk"  },
-  { name: "Owen",          pos: "rb"  },
+  { name: "Brendon",          pos: "rb"  },
   { name: "Big Mac",       pos: "cb1" },
   { name: "Dredd",         pos: "cb2" },
   { name: "Donnovan",      pos: "lb"  },
-  { name: "Rocky",         pos: "dm"  },
-  { name: "Migsy",         pos: "rcm" },
+  { name: "Rocky",         pos: "dm",  x: 200, y: 340 },
+  { name: "Migsy",         pos: "rcm", x: 255, y: 240 },
   { name: "Adam",          pos: "lw"  },
-  { name: "Reuben",        pos: "cam" },
-  { name: "Brendon",       pos: "rw"  },
+  { name: "Reuben",        pos: "cam", x: 145, y: 240 },
+  { name: "Owen",       pos: "rw"  },
   { name: "Darren / Johnnie", pos: "st" }
 ];
 
@@ -916,7 +916,8 @@ function toggleOpposition() {
     // Show opposition in top half
     opposition.forEach(opp => {
       const pos = positions[opp.pos];
-      const target = compressOppPos(pos);
+      const basePos = (opp.x !== undefined) ? { x: opp.x, y: opp.y } : pos;
+      const target = compressOppPos(basePos);
       const color = typeColor[pos.type];
 
       const g = document.createElementNS(SVG_NS, "g");
