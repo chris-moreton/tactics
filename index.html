@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matchday Plan — Sunday League FC</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0e1a;
+      --card: #111827;
+      --border: #1e293b;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #10b981;
+      --accent-dark: #059669;
+      --gold: #fbbf24;
+      --gk: #f59e0b;
+      --def: #3b82f6;
+      --mid: #8b5cf6;
+      --att: #ef4444;
+      --bench: #334155;
+      --pitch-bg: #1a4d2e;
+      --pitch-stripe: #1e5a34;
+      --pitch-line: rgba(255,255,255,0.55);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* Header */
+    .header {
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+    .header .match-info {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .formation-pill {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    /* Overview */
+    .overview {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .overview-text {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .overview-text strong { color: var(--text); }
+    .overview-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 8px 0;
+      font-family: inherit;
+    }
+    @media (max-width: 767px) {
+      .overview-toggle { display: block; }
+      .overview-text.collapsed {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    }
+
+    /* Time Scrubber */
+    .scrubber {
+      padding: 16px 0;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+    }
+    .scrubber-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+    }
+    .scrubber-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+      min-height: 56px;
+    }
+    .scrubber-btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .scrubber-btn .time-label {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .scrubber-btn .sub-label {
+      font-size: 0.7rem;
+      margin-top: 2px;
+      opacity: 0.7;
+    }
+    .scrubber-btn.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+    }
+    .scrubber-btn.active .sub-label { opacity: 1; }
+
+    /* Main content */
+    .main {
+      padding: 20px 0;
+    }
+    @media (min-width: 768px) {
+      .main-grid {
+        display: grid;
+        grid-template-columns: 3fr 2fr;
+        gap: 24px;
+        align-items: start;
+      }
+    }
+
+    /* Pitch */
+    .pitch-wrapper {
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    .pitch-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+      overflow: visible;
+    }
+
+    /* Bench */
+    .bench-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: var(--card);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .bench-bar:hover { border-color: var(--bench); }
+    .bench-bar.selected { border-color: var(--gold); }
+    .bench-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .bench-player-name {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+    .bench-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--bench);
+      flex-shrink: 0;
+    }
+
+    /* Player Detail */
+    .player-detail {
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .player-detail.empty {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 40px 24px;
+      font-size: 0.95rem;
+    }
+    .player-name-big {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+    .player-role {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .journey-bar {
+      margin-top: 20px;
+    }
+    .journey-bar-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .journey-segments {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 3px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .journey-seg {
+      padding: 8px 2px;
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.03em;
+    }
+    .journey-seg.type-gk { background: var(--gk); }
+    .journey-seg.type-def { background: var(--def); }
+    .journey-seg.type-mid { background: var(--mid); }
+    .journey-seg.type-att { background: var(--att); }
+    .journey-seg.type-bench { background: var(--bench); }
+    .journey-labels {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 3px;
+      margin-top: 4px;
+    }
+    .journey-labels span {
+      text-align: center;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+    .player-blurb {
+      margin-top: 20px;
+      padding: 16px;
+      border-left: 3px solid var(--accent);
+      background: rgba(16,185,129,0.05);
+      border-radius: 0 8px 8px 0;
+      font-style: italic;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    /* Opposition */
+    .opposition-section {
+      padding: 20px 0 40px;
+    }
+    .opp-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 16px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .opp-toggle:hover { border-color: var(--text-muted); }
+    .opp-toggle .chevron {
+      transition: transform 0.3s;
+      color: var(--text-muted);
+    }
+    .opp-toggle.open .chevron { transform: rotate(180deg); }
+    .opp-content {
+      display: none;
+      margin-top: 12px;
+    }
+    .opp-content.open { display: block; }
+    .opp-pitch-wrapper {
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 12px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* Player token hover */
+    .player-token { cursor: pointer; }
+    .player-token:hover .token-circle { filter: brightness(1.2); }
+
+    /* Animation classes */
+    .token-enter { animation: fadeIn 300ms ease-out forwards; }
+    .token-exit { animation: fadeOut 250ms ease-out forwards; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.8); }
+    }
+
+    /* Focus styles */
+    *:focus { outline: none; }
+    *:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div>
+        <h1>Sunday League FC</h1>
+        <div class="match-info">vs The Opposition &middot; Saturday 10 May 2025</div>
+      </div>
+      <div class="formation-pill">4-2-3-1</div>
+    </div>
+  </header>
+
+  <!-- Formation Overview -->
+  <section class="overview">
+    <button class="overview-toggle" id="overviewToggle" aria-expanded="false">Show full overview &darr;</button>
+    <p class="overview-text collapsed" id="overviewText">
+      We're playing a <strong>4-2-3-1</strong>, mirroring the shape we expect from the opposition. Tim and John sit as a double pivot, controlling the middle and shielding the back four. Jacob plays as the 10 between the lines, looking to feed Tommy up top and link with Jordan on the left and Fred (then Mark) on the right. Defensively we stay compact with the wingers tucking in; in attack, we look to get our front four into central areas while Ben and Mehdi overlap from full-back. Subs rotate every 15 minutes to keep us fresh &mdash; full breakdown below. Tap any player to see their journey through the game.
+    </p>
+  </section>
+
+  <!-- Time Scrubber -->
+  <nav class="scrubber" aria-label="Match timeline">
+    <div class="scrubber-grid" id="scrubberGrid" role="tablist"></div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="main-grid">
+      <div>
+        <!-- Pitch -->
+        <div class="pitch-wrapper">
+          <svg class="pitch-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Football pitch showing team formation">
+            <defs>
+              <pattern id="grass" patternUnits="userSpaceOnUse" width="400" height="40">
+                <rect width="400" height="20" fill="#1a4d2e"/>
+                <rect y="20" width="400" height="20" fill="#1e5a34"/>
+              </pattern>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+
+            <!-- Pitch background -->
+            <rect width="400" height="600" fill="url(#grass)" rx="6"/>
+
+            <!-- Pitch markings -->
+            <g stroke="rgba(255,255,255,0.55)" stroke-width="1.5" fill="none">
+              <!-- Boundary -->
+              <rect x="20" y="15" width="360" height="570" rx="2"/>
+              <!-- Halfway line -->
+              <line x1="20" y1="300" x2="380" y2="300"/>
+              <!-- Centre circle -->
+              <circle cx="200" cy="300" r="50"/>
+              <!-- Centre spot -->
+              <circle cx="200" cy="300" r="2.5" fill="rgba(255,255,255,0.55)"/>
+
+              <!-- Top penalty area (opposition goal) -->
+              <rect x="100" y="15" width="200" height="80"/>
+              <!-- Top goal area -->
+              <rect x="150" y="15" width="100" height="30"/>
+              <!-- Top penalty spot -->
+              <circle cx="200" cy="70" r="2.5" fill="rgba(255,255,255,0.55)"/>
+              <!-- Top penalty arc -->
+              <path d="M 145 95 A 50 50 0 0 1 255 95"/>
+              <!-- Goal -->
+              <rect x="170" y="7" width="60" height="8" rx="1" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+
+              <!-- Bottom penalty area (our goal) -->
+              <rect x="100" y="505" width="200" height="80"/>
+              <!-- Bottom goal area -->
+              <rect x="150" y="555" width="100" height="30"/>
+              <!-- Bottom penalty spot -->
+              <circle cx="200" cy="530" r="2.5" fill="rgba(255,255,255,0.55)"/>
+              <!-- Bottom penalty arc -->
+              <path d="M 145 505 A 50 50 0 0 0 255 505"/>
+              <!-- Goal -->
+              <rect x="170" y="585" width="60" height="8" rx="1" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+            </g>
+
+            <!-- Player tokens rendered by JS -->
+            <g id="pitchTokens"></g>
+          </svg>
+        </div>
+
+        <!-- Bench -->
+        <div class="bench-bar" id="benchBar" role="button" tabindex="0" aria-label="Bench player">
+          <div class="bench-dot"></div>
+          <span class="bench-label">Bench</span>
+          <span class="bench-player-name" id="benchName">—</span>
+        </div>
+      </div>
+
+      <!-- Player Detail -->
+      <div class="player-detail empty" id="playerDetail">
+        Tap any player to see how their match unfolds.
+      </div>
+    </div>
+  </main>
+
+  <!-- Opposition -->
+  <section class="opposition-section">
+    <button class="opp-toggle" id="oppToggle" aria-expanded="false">
+      <span>What we expect from them</span>
+      <span class="chevron">&#9660;</span>
+    </button>
+    <div class="opp-content" id="oppContent">
+      <div style="text-align:center; margin-bottom:8px;">
+        <span class="formation-pill" style="font-size:0.85rem; padding:4px 12px;">4-2-3-1</span>
+      </div>
+      <div class="opp-pitch-wrapper">
+        <svg class="pitch-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Opposition formation">
+          <rect width="400" height="600" fill="url(#grass)" rx="6"/>
+          <g stroke="rgba(255,255,255,0.55)" stroke-width="1.5" fill="none">
+            <rect x="20" y="15" width="360" height="570" rx="2"/>
+            <line x1="20" y1="300" x2="380" y2="300"/>
+            <circle cx="200" cy="300" r="50"/>
+            <circle cx="200" cy="300" r="2.5" fill="rgba(255,255,255,0.55)"/>
+            <rect x="100" y="15" width="200" height="80"/>
+            <rect x="150" y="15" width="100" height="30"/>
+            <circle cx="200" cy="70" r="2.5" fill="rgba(255,255,255,0.55)"/>
+            <path d="M 145 95 A 50 50 0 0 1 255 95"/>
+            <rect x="170" y="7" width="60" height="8" rx="1" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+            <rect x="100" y="505" width="200" height="80"/>
+            <rect x="150" y="555" width="100" height="30"/>
+            <circle cx="200" cy="530" r="2.5" fill="rgba(255,255,255,0.55)"/>
+            <path d="M 145 505 A 50 50 0 0 0 255 505"/>
+            <rect x="170" y="585" width="60" height="8" rx="1" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+          </g>
+          <g id="oppTokens"></g>
+        </svg>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+// ── Data ──
+const players = {
+  drew:   { name: "Drew",   role: "Goalkeeper",          blurb: "Last line of defence. Hands like superglue and the calm to match. Plays the full 90 because nobody else can be trusted within ten yards of the goalmouth." },
+  ben:    { name: "Ben",    role: "Left Back",           blurb: "Locked in at left-back for 90. Bombs forward at every opportunity, occasionally remembers to come back. Also our chief \u2018MAN ON!\u2019 shouter." },
+  elango: { name: "Elango", role: "Centre Back",         blurb: "The wall. Reads the game two passes ahead. Plays the full 90 without breaking sweat \u2014 we\u2019re starting to suspect he\u2019s not actually mortal." },
+  chris:  { name: "Chris",  role: "Centre Back",         blurb: "Comes on at 15 with composure to spare. The thinking man\u2019s centre-back. Also the gaffer, which is suspicious \u2014 almost like he\u2019s picking himself." },
+  mark:   { name: "Mark",   role: "Utility (CB\u2192RB\u2192RW)", blurb: "Our Swiss Army knife. CB, then a breather, then RB, then RW. Don\u2019t ask Mark which position he plays \u2014 the answer is \u2018whichever one Chris last shouted at me about\u2019." },
+  mehdi:  { name: "Mehdi",  role: "Right Back",          blurb: "Solid, dependable, has never bombed forward in his life \u2014 and that\u2019s why we love him. Takes a quick breather while Mark covers, then back to it." },
+  tim:    { name: "Tim",    role: "Defensive Mid",       blurb: "The pivot. Sits deep, breaks up play, sprays the ball wide. Carries the team for 75 and absolutely earns his rest." },
+  john:   { name: "John",   role: "Right Central Mid",   blurb: "Engine of the midfield. Plays the full 90 without complaint. Will be reminding the WhatsApp group of this for at least three weeks." },
+  jacob:  { name: "Jacob",  role: "Att. Mid \u2192 CM",       blurb: "Our number 10. Operates between the lines, sniffs out through balls, gets in the box. Drops deeper at 75 to help see the game out \u2014 tactical brain mode activated." },
+  fred:   { name: "Fred",   role: "RW \u2192 CAM",            blurb: "Two-footed, two-positioned. Starts on the right wing, takes a breather, returns through the middle as our number 10. Modern football, this." },
+  jordan: { name: "Jordan", role: "Left Wing",           blurb: "Pure wide attacker. Stays high, gets at the full-back, terrorises the right side. Plays the full 90 because no one else can play LW \u2014 lucky for us, he\u2019s good at it." },
+  tommy:  { name: "Tommy",  role: "Striker",             blurb: "Up top, lone wolf. Holds the ball up, brings others into play, finishes anything that drops. Will spend half the game gesturing for service from the wingers." }
+};
+
+const positions = {
+  gk:  { x: 200, y: 545, type: "gk",  label: "GK"  },
+  lb:  { x:  60, y: 470, type: "def", label: "LB"  },
+  cb1: { x: 155, y: 490, type: "def", label: "CB"  },
+  cb2: { x: 245, y: 490, type: "def", label: "CB"  },
+  rb:  { x: 340, y: 470, type: "def", label: "RB"  },
+  dm:  { x: 145, y: 370, type: "mid", label: "DM"  },
+  rcm: { x: 255, y: 370, type: "mid", label: "CM"  },
+  lw:  { x:  60, y: 220, type: "att", label: "LW"  },
+  cam: { x: 200, y: 240, type: "att", label: "CAM" },
+  rw:  { x: 340, y: 220, type: "att", label: "RW"  },
+  st:  { x: 200, y:  90, type: "att", label: "ST"  }
+};
+
+const timeline = [
+  { id: "fh", short: "FH", name: "Kick-off", subLabel: "0\u201315",  formation: { gk: "drew", lb: "ben", cb1: "mark",  cb2: "elango", rb: "mehdi", dm: "tim",   rcm: "john", lw: "jordan", cam: "jacob", rw: "fred", st: "tommy", bench: "chris" } },
+  { id: "15", short: "15", name: "15\u2032",      subLabel: "Sub 1", formation: { gk: "drew", lb: "ben", cb1: "chris", cb2: "elango", rb: "mehdi", dm: "tim",   rcm: "john", lw: "jordan", cam: "jacob", rw: "fred", st: "tommy", bench: "mark"  } },
+  { id: "30", short: "30", name: "30\u2032",      subLabel: "Sub 2", formation: { gk: "drew", lb: "ben", cb1: "chris", cb2: "elango", rb: "mark",  dm: "tim",   rcm: "john", lw: "jordan", cam: "jacob", rw: "fred", st: "tommy", bench: "mehdi" } },
+  { id: "ht", short: "HT", name: "HT",       subLabel: "Sub 3", formation: { gk: "drew", lb: "ben", cb1: "chris", cb2: "elango", rb: "mehdi", dm: "tim",   rcm: "john", lw: "jordan", cam: "jacob", rw: "mark", st: "tommy", bench: "fred"  } },
+  { id: "60", short: "60", name: "60\u2032",      subLabel: "Sub 4", formation: { gk: "drew", lb: "ben", cb1: "chris", cb2: "elango", rb: "mehdi", dm: "tim",   rcm: "john", lw: "jordan", cam: "fred",  rw: "mark", st: "tommy", bench: "jacob" } },
+  { id: "75", short: "75", name: "75\u2032",      subLabel: "Sub 5", formation: { gk: "drew", lb: "ben", cb1: "chris", cb2: "elango", rb: "mehdi", dm: "jacob", rcm: "john", lw: "jordan", cam: "fred",  rw: "mark", st: "tommy", bench: "tim"   } }
+];
+
+const opposition = [
+  { name: "George",        pos: "gk"  },
+  { name: "Migsy",         pos: "rb"  },
+  { name: "Big Mac",       pos: "cb1" },
+  { name: "Dredd",         pos: "cb2" },
+  { name: "Donnovan",      pos: "lb"  },
+  { name: "Owen",          pos: "dm"  },
+  { name: "Reuben",        pos: "rcm" },
+  { name: "Adam",          pos: "lw"  },
+  { name: "Rocky",         pos: "cam" },
+  { name: "Brendon",       pos: "rw"  },
+  { name: "Darren / Johnnie", pos: "st" }
+];
+
+// ── Colour helpers ──
+const typeColor = { gk: "#f59e0b", def: "#3b82f6", mid: "#8b5cf6", att: "#ef4444" };
+
+function posType(posKey) {
+  if (posKey === "bench") return "bench";
+  return positions[posKey]?.type || "bench";
+}
+
+// ── State ──
+let currentPeriod = 0;
+let selectedPlayer = null;
+
+// ── Scrubber ──
+const scrubberGrid = document.getElementById("scrubberGrid");
+timeline.forEach((period, i) => {
+  const btn = document.createElement("button");
+  btn.className = "scrubber-btn" + (i === 0 ? " active" : "");
+  btn.setAttribute("role", "tab");
+  btn.setAttribute("aria-selected", i === 0 ? "true" : "false");
+  btn.setAttribute("aria-label", period.name + " " + period.subLabel);
+  btn.innerHTML = `<span class="time-label">${period.short}</span><span class="sub-label">${period.subLabel}</span>`;
+  btn.addEventListener("click", () => selectPeriod(i));
+  scrubberGrid.appendChild(btn);
+});
+
+function selectPeriod(idx) {
+  if (idx === currentPeriod) return;
+  const prevFormation = timeline[currentPeriod].formation;
+  currentPeriod = idx;
+
+  // Update scrubber
+  scrubberGrid.querySelectorAll(".scrubber-btn").forEach((btn, i) => {
+    btn.classList.toggle("active", i === idx);
+    btn.setAttribute("aria-selected", i === idx ? "true" : "false");
+  });
+
+  renderPitch(prevFormation);
+  updateBench();
+  if (selectedPlayer) renderDetail(selectedPlayer);
+}
+
+// ── Pitch rendering ──
+const pitchTokens = document.getElementById("pitchTokens");
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function renderPitch(prevFormation) {
+  const formation = timeline[currentPeriod].formation;
+  const existingTokens = {};
+  pitchTokens.querySelectorAll(".player-token").forEach(g => {
+    existingTokens[g.dataset.player] = g;
+  });
+
+  const newOnPitch = new Set();
+
+  for (const [posKey, playerId] of Object.entries(formation)) {
+    if (posKey === "bench") continue;
+    newOnPitch.add(playerId);
+    const pos = positions[posKey];
+    const color = typeColor[pos.type];
+    const existing = existingTokens[playerId];
+
+    if (existing) {
+      // Player was on pitch — animate to new position
+      const circle = existing.querySelector(".token-circle");
+      const nameText = existing.querySelector(".token-name");
+      const labelText = existing.querySelector(".token-label");
+
+      existing.style.transition = "transform 350ms ease-out";
+      existing.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+      circle.setAttribute("fill", color);
+      labelText.textContent = pos.label;
+
+      // Update selection stroke
+      if (playerId === selectedPlayer) {
+        circle.setAttribute("stroke", "#fbbf24");
+        circle.setAttribute("stroke-width", "3");
+        existing.setAttribute("filter", "url(#glow)");
+      } else {
+        circle.setAttribute("stroke", "none");
+        circle.setAttribute("stroke-width", "0");
+        existing.removeAttribute("filter");
+      }
+
+      existing.classList.remove("token-enter", "token-exit");
+      delete existingTokens[playerId];
+    } else {
+      // Player coming on — create and fade in
+      const g = createToken(playerId, pos, color);
+      g.classList.add("token-enter");
+      pitchTokens.appendChild(g);
+    }
+  }
+
+  // Players going off — fade out and remove
+  for (const [playerId, g] of Object.entries(existingTokens)) {
+    g.classList.add("token-exit");
+    g.addEventListener("animationend", () => g.remove(), { once: true });
+  }
+}
+
+function createToken(playerId, pos, color) {
+  const g = document.createElementNS(SVG_NS, "g");
+  g.classList.add("player-token");
+  g.dataset.player = playerId;
+  g.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+  g.setAttribute("tabindex", "0");
+  g.setAttribute("role", "button");
+  g.setAttribute("aria-label", players[playerId].name);
+
+  const isSelected = playerId === selectedPlayer;
+
+  const circle = document.createElementNS(SVG_NS, "circle");
+  circle.classList.add("token-circle");
+  circle.setAttribute("r", "22");
+  circle.setAttribute("fill", color);
+  if (isSelected) {
+    circle.setAttribute("stroke", "#fbbf24");
+    circle.setAttribute("stroke-width", "3");
+    g.setAttribute("filter", "url(#glow)");
+  }
+
+  const name = document.createElementNS(SVG_NS, "text");
+  name.classList.add("token-name");
+  name.setAttribute("text-anchor", "middle");
+  name.setAttribute("dy", "0.35em");
+  name.setAttribute("fill", "#fff");
+  name.setAttribute("font-size", "11");
+  name.setAttribute("font-weight", "700");
+  name.setAttribute("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
+  name.textContent = players[playerId].name;
+
+  const label = document.createElementNS(SVG_NS, "text");
+  label.classList.add("token-label");
+  label.setAttribute("text-anchor", "middle");
+  label.setAttribute("y", "32");
+  label.setAttribute("fill", "rgba(255,255,255,0.7)");
+  label.setAttribute("font-size", "9");
+  label.setAttribute("font-weight", "600");
+  label.setAttribute("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
+  label.textContent = pos.label;
+
+  g.appendChild(circle);
+  g.appendChild(name);
+  g.appendChild(label);
+
+  g.addEventListener("click", () => selectPlayer(playerId));
+  g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectPlayer(playerId); } });
+
+  return g;
+}
+
+// ── Bench ──
+const benchBar = document.getElementById("benchBar");
+const benchName = document.getElementById("benchName");
+
+function updateBench() {
+  const benchPlayerId = timeline[currentPeriod].formation.bench;
+  benchName.textContent = players[benchPlayerId].name;
+  benchBar.classList.toggle("selected", benchPlayerId === selectedPlayer);
+}
+
+benchBar.addEventListener("click", () => {
+  selectPlayer(timeline[currentPeriod].formation.bench);
+});
+benchBar.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectPlayer(timeline[currentPeriod].formation.bench); }
+});
+
+// ── Player selection ──
+function selectPlayer(playerId) {
+  selectedPlayer = playerId;
+  renderDetail(playerId);
+  updateTokenSelection();
+  updateBench();
+
+  // On mobile, scroll to detail
+  if (window.innerWidth < 768) {
+    document.getElementById("playerDetail").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
+
+function updateTokenSelection() {
+  pitchTokens.querySelectorAll(".player-token").forEach(g => {
+    const circle = g.querySelector(".token-circle");
+    if (g.dataset.player === selectedPlayer) {
+      circle.setAttribute("stroke", "#fbbf24");
+      circle.setAttribute("stroke-width", "3");
+      g.setAttribute("filter", "url(#glow)");
+    } else {
+      circle.setAttribute("stroke", "none");
+      circle.setAttribute("stroke-width", "0");
+      g.removeAttribute("filter");
+    }
+  });
+}
+
+// ── Detail panel ──
+const playerDetail = document.getElementById("playerDetail");
+
+function renderDetail(playerId) {
+  const p = players[playerId];
+  playerDetail.classList.remove("empty");
+
+  // Build journey
+  const journeySegments = timeline.map((period, i) => {
+    // Find what position this player is in during this period
+    for (const [posKey, pid] of Object.entries(period.formation)) {
+      if (pid === playerId) {
+        const type = posType(posKey);
+        const label = posKey === "bench" ? "BENCH" : positions[posKey].label;
+        return { type, label };
+      }
+    }
+    return { type: "bench", label: "BENCH" };
+  });
+
+  const segHTML = journeySegments.map(s =>
+    `<div class="journey-seg type-${s.type}">${s.label}</div>`
+  ).join("");
+
+  const labelHTML = timeline.map(t => `<span>${t.short}</span>`).join("");
+
+  playerDetail.innerHTML = `
+    <div class="player-name-big">${p.name}</div>
+    <div class="player-role">${p.role}</div>
+    <div class="journey-bar">
+      <div class="journey-bar-label">Match Journey</div>
+      <div class="journey-segments">${segHTML}</div>
+      <div class="journey-labels">${labelHTML}</div>
+    </div>
+    <div class="player-blurb">${p.blurb}</div>
+  `;
+}
+
+// ── Overview toggle ──
+const overviewToggle = document.getElementById("overviewToggle");
+const overviewText = document.getElementById("overviewText");
+overviewToggle.addEventListener("click", () => {
+  const collapsed = overviewText.classList.toggle("collapsed");
+  overviewToggle.textContent = collapsed ? "Show full overview \u2193" : "Hide overview \u2191";
+  overviewToggle.setAttribute("aria-expanded", !collapsed);
+});
+
+// ── Opposition toggle ──
+const oppToggle = document.getElementById("oppToggle");
+const oppContent = document.getElementById("oppContent");
+oppToggle.addEventListener("click", () => {
+  const open = oppContent.classList.toggle("open");
+  oppToggle.classList.toggle("open", open);
+  oppToggle.setAttribute("aria-expanded", open);
+  if (open) renderOpposition();
+});
+
+// ── Opposition pitch ──
+let oppRendered = false;
+function renderOpposition() {
+  if (oppRendered) return;
+  oppRendered = true;
+  const oppTokens = document.getElementById("oppTokens");
+
+  // Opposition attacks downward, so flip y: use (600 - y)
+  opposition.forEach(opp => {
+    const pos = positions[opp.pos];
+    const color = typeColor[pos.type];
+    const x = pos.x;
+    const y = 600 - pos.y; // flip
+
+    const g = document.createElementNS(SVG_NS, "g");
+    g.style.transform = `translate(${x}px, ${y}px)`;
+
+    const circle = document.createElementNS(SVG_NS, "circle");
+    circle.setAttribute("r", "22");
+    circle.setAttribute("fill", color);
+    circle.setAttribute("opacity", "0.85");
+
+    const name = document.createElementNS(SVG_NS, "text");
+    name.setAttribute("text-anchor", "middle");
+    name.setAttribute("dy", "0.35em");
+    name.setAttribute("fill", "#fff");
+    name.setAttribute("font-size", opp.name.length > 8 ? "9" : "11");
+    name.setAttribute("font-weight", "700");
+    name.setAttribute("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
+    name.textContent = opp.name;
+
+    const label = document.createElementNS(SVG_NS, "text");
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("y", "32");
+    label.setAttribute("fill", "rgba(255,255,255,0.6)");
+    label.setAttribute("font-size", "9");
+    label.setAttribute("font-weight", "600");
+    label.setAttribute("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
+    label.textContent = pos.label;
+
+    g.appendChild(circle);
+    g.appendChild(name);
+    g.appendChild(label);
+    oppTokens.appendChild(g);
+  });
+}
+
+// ── Initial render ──
+function initialRender() {
+  const formation = timeline[0].formation;
+  for (const [posKey, playerId] of Object.entries(formation)) {
+    if (posKey === "bench") continue;
+    const pos = positions[posKey];
+    const color = typeColor[pos.type];
+    const g = createToken(playerId, pos, color);
+    pitchTokens.appendChild(g);
+  }
+  updateBench();
+}
+
+initialRender();
+</script>
+</body>
+</html>
