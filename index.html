@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Matchday Plan — Sunday League FC</title>
+  <title>Matchday Plan — Challenger Team vs Defending Champions</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -16,14 +16,14 @@
       --accent: #10b981;
       --accent-dark: #059669;
       --gold: #fbbf24;
-      --gk: #f59e0b;
-      --def: #3b82f6;
-      --mid: #8b5cf6;
-      --att: #ef4444;
-      --bench: #334155;
-      --pitch-bg: #1a4d2e;
-      --pitch-stripe: #1e5a34;
-      --pitch-line: rgba(255,255,255,0.55);
+      --col-gk: #f59e0b;
+      --col-cb: #3b82f6;
+      --col-fb: #06b6d4;
+      --col-cm: #8b5cf6;
+      --col-wg: #ec4899;
+      --col-cam: #f97316;
+      --col-st: #ef4444;
+      --col-bench: #334155;
     }
 
     html { scroll-behavior: smooth; }
@@ -43,80 +43,42 @@
       padding: 0 16px;
     }
 
-    /* Header */
-    .header {
-      padding: 28px 0 20px;
-      border-bottom: 1px solid var(--border);
-    }
-    .header-inner {
+    /* Hints */
+    .hint {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .header h1 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: #fff;
-    }
-    .header .match-info {
-      font-size: 0.95rem;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
       color: var(--text-muted);
-      margin-top: 2px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
     }
-    .formation-pill {
-      display: inline-block;
-      padding: 6px 16px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-      color: #fff;
-      font-weight: 700;
-      font-size: 0.95rem;
-      letter-spacing: 0.03em;
-      white-space: nowrap;
-    }
-
-    /* Overview */
-    .overview {
-      padding: 20px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .overview-text {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      line-height: 1.7;
-    }
-    .overview-text strong { color: var(--text); }
-    .overview-toggle {
-      display: none;
-      background: none;
-      border: none;
+    .hint-arrow {
       color: var(--accent);
-      font-size: 0.9rem;
-      cursor: pointer;
-      padding: 8px 0;
-      font-family: inherit;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      animation: bounce-down 1.5s ease-in-out infinite;
     }
-    @media (max-width: 767px) {
-      .overview-toggle { display: block; }
-      .overview-text.collapsed {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
+    @keyframes bounce-down {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(4px); }
+    }
+    .hint-scrubber {
+      margin-bottom: 4px;
+    }
+    .hint-pitch {
+      margin-bottom: 12px;
     }
 
     /* Time Scrubber */
     .scrubber {
-      padding: 16px 0;
+      padding: 12px 0;
       position: sticky;
       top: 0;
       background: var(--bg);
       z-index: 100;
-      border-bottom: 1px solid var(--border);
     }
     .scrubber-grid {
       display: grid;
@@ -160,9 +122,7 @@
     .scrubber-btn.active .sub-label { opacity: 1; }
 
     /* Main content */
-    .main {
-      padding: 20px 0;
-    }
+    .main { padding: 16px 0; }
     @media (min-width: 768px) {
       .main-grid {
         display: grid;
@@ -170,22 +130,6 @@
         gap: 24px;
         align-items: start;
       }
-    }
-
-    /* Pitch */
-    .pitch-wrapper {
-      background: var(--card);
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      padding: 12px;
-      margin-bottom: 16px;
-    }
-    .pitch-svg {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 10px;
-      overflow: visible;
     }
 
     /* Bench */
@@ -197,11 +141,11 @@
       background: var(--card);
       border-radius: 10px;
       border: 1px solid var(--border);
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       cursor: pointer;
       transition: border-color 0.2s;
     }
-    .bench-bar:hover { border-color: var(--bench); }
+    .bench-bar:hover { border-color: var(--col-bench); }
     .bench-bar.selected { border-color: var(--gold); }
     .bench-label {
       font-size: 0.8rem;
@@ -216,10 +160,55 @@
       font-size: 0.95rem;
     }
     .bench-dot {
-      width: 12px; height: 12px;
+      width: 44px; height: 44px;
       border-radius: 50%;
-      background: var(--bench);
+      background: var(--col-bench);
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    /* Pitch */
+    .pitch-wrapper {
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .pitch-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+      overflow: visible;
+    }
+
+    /* Opposition toggle button */
+    .opp-btn {
+      display: block;
+      width: 100%;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border: 1px solid #f97316;
+      border-radius: 10px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .opp-btn:hover { filter: brightness(1.1); }
+    .opp-btn.active {
+      background: linear-gradient(135deg, #ea580c, #c2410c);
+      border-color: #ea580c;
     }
 
     /* Player Detail */
@@ -250,9 +239,7 @@
       font-weight: 600;
       margin-top: 2px;
     }
-    .journey-bar {
-      margin-top: 20px;
-    }
+    .journey-bar { margin-top: 20px; }
     .journey-bar-label {
       font-size: 0.75rem;
       text-transform: uppercase;
@@ -275,12 +262,19 @@
       font-weight: 700;
       color: #fff;
       letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: filter 0.15s;
     }
-    .journey-seg.type-gk { background: var(--gk); }
-    .journey-seg.type-def { background: var(--def); }
-    .journey-seg.type-mid { background: var(--mid); }
-    .journey-seg.type-att { background: var(--att); }
-    .journey-seg.type-bench { background: var(--bench); }
+    .journey-seg:hover { filter: brightness(1.25); }
+    .journey-seg.active { outline: 2px solid var(--gold); outline-offset: -2px; }
+    .journey-seg.type-gk { background: var(--col-gk); }
+    .journey-seg.type-cb { background: var(--col-cb); }
+    .journey-seg.type-fb { background: var(--col-fb); }
+    .journey-seg.type-cm { background: var(--col-cm); }
+    .journey-seg.type-wg { background: var(--col-wg); }
+    .journey-seg.type-cam { background: var(--col-cam); }
+    .journey-seg.type-st { background: var(--col-st); }
+    .journey-seg.type-bench { background: var(--col-bench); }
     .journey-labels {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
@@ -298,68 +292,14 @@
       border-left: 3px solid var(--accent);
       background: rgba(16,185,129,0.05);
       border-radius: 0 8px 8px 0;
-      font-style: italic;
       color: var(--text-muted);
       font-size: 0.9rem;
       line-height: 1.7;
     }
 
-    /* Opposition */
-    .opposition-section {
-      padding: 20px 0 40px;
-    }
-    .opp-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: 16px 20px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    .opp-toggle:hover { border-color: var(--text-muted); }
-    .opp-toggle .chevron {
-      transition: transform 0.3s;
-      color: var(--text-muted);
-    }
-    .opp-toggle.open .chevron { transform: rotate(180deg); }
-    .opp-content {
-      display: none;
-      margin-top: 12px;
-    }
-    .opp-content.open { display: block; }
-    .opp-pitch-wrapper {
-      background: var(--card);
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      padding: 12px;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-
-    /* Player token hover */
+    /* Player token */
     .player-token { cursor: pointer; }
     .player-token:hover .token-circle { filter: brightness(1.2); }
-
-    /* Animation classes */
-    .token-enter { animation: fadeIn 300ms ease-out forwards; }
-    .token-exit { animation: fadeOut 250ms ease-out forwards; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.8); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    @keyframes fadeOut {
-      from { opacity: 1; transform: scale(1); }
-      to { opacity: 0; transform: scale(0.8); }
-    }
 
     /* Focus styles */
     *:focus { outline: none; }
@@ -369,24 +309,11 @@
 <body>
 
 <div class="container">
-  <!-- Header -->
-  <header class="header">
-    <div class="header-inner">
-      <div>
-        <h1>Sunday League FC</h1>
-        <div class="match-info">vs The Opposition &middot; Saturday 10 May 2025</div>
-      </div>
-      <div class="formation-pill">4-2-3-1</div>
-    </div>
-  </header>
-
-  <!-- Formation Overview -->
-  <section class="overview">
-    <button class="overview-toggle" id="overviewToggle" aria-expanded="false">Show full overview &darr;</button>
-    <p class="overview-text collapsed" id="overviewText">
-      We're playing a <strong>4-2-3-1</strong>, mirroring the shape we expect from the opposition. Tim and John sit as a double pivot, controlling the middle and shielding the back four. Jacob plays as the 10 between the lines, looking to feed Tommy up top and link with Jordan on the left and Fred (then Mark) on the right. Defensively we stay compact with the wingers tucking in; in attack, we look to get our front four into central areas while Ben and Mehdi overlap from full-back. Subs rotate every 15 minutes to keep us fresh &mdash; full breakdown below. Tap any player to see their journey through the game.
-    </p>
-  </section>
+  <!-- Hint: scrubber -->
+  <div class="hint hint-scrubber">
+    <span class="hint-arrow">&#8595;</span>
+    <span>Click a match period to see the team at that point</span>
+  </div>
 
   <!-- Time Scrubber -->
   <nav class="scrubber" aria-label="Match timeline">
@@ -397,6 +324,24 @@
   <main class="main">
     <div class="main-grid">
       <div>
+        <!-- Show Opposition -->
+        <button class="opp-btn" id="oppBtn">Show Opposition</button>
+
+        <!-- Hint: pitch -->
+        <div class="hint hint-pitch">
+          <span class="hint-arrow">&#8595;</span>
+          <span>Click a player to see when/if they are subbing</span>
+        </div>
+
+        <!-- Bench -->
+        <div class="bench-bar" id="benchBar" role="button" tabindex="0" aria-label="Bench player">
+          <div class="bench-dot" id="benchDot"></div>
+          <div>
+            <span class="bench-label">Bench</span>
+            <div class="bench-player-name" id="benchName">&mdash;</div>
+          </div>
+        </div>
+
         <!-- Pitch -->
         <div class="pitch-wrapper">
           <svg class="pitch-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Football pitch showing team formation">
@@ -419,49 +364,29 @@
 
             <!-- Pitch markings -->
             <g stroke="rgba(255,255,255,0.55)" stroke-width="1.5" fill="none">
-              <!-- Boundary -->
               <rect x="20" y="15" width="360" height="570" rx="2"/>
-              <!-- Halfway line -->
               <line x1="20" y1="300" x2="380" y2="300"/>
-              <!-- Centre circle -->
               <circle cx="200" cy="300" r="50"/>
-              <!-- Centre spot -->
               <circle cx="200" cy="300" r="2.5" fill="rgba(255,255,255,0.55)"/>
-
-              <!-- Top penalty area (opposition goal) -->
               <rect x="100" y="15" width="200" height="80"/>
-              <!-- Top goal area -->
               <rect x="150" y="15" width="100" height="30"/>
-              <!-- Top penalty spot -->
               <circle cx="200" cy="70" r="2.5" fill="rgba(255,255,255,0.55)"/>
-              <!-- Top penalty arc -->
               <path d="M 145 95 A 50 50 0 0 1 255 95"/>
-              <!-- Goal -->
               <rect x="170" y="7" width="60" height="8" rx="1" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
-
-              <!-- Bottom penalty area (our goal) -->
               <rect x="100" y="505" width="200" height="80"/>
-              <!-- Bottom goal area -->
               <rect x="150" y="555" width="100" height="30"/>
-              <!-- Bottom penalty spot -->
               <circle cx="200" cy="530" r="2.5" fill="rgba(255,255,255,0.55)"/>
-              <!-- Bottom penalty arc -->
               <path d="M 145 505 A 50 50 0 0 0 255 505"/>
-              <!-- Goal -->
               <rect x="170" y="585" width="60" height="8" rx="1" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
             </g>
 
-            <!-- Player tokens rendered by JS -->
+            <!-- Opposition overlay tokens -->
+            <g id="oppOverlay"></g>
+            <!-- Our player tokens -->
             <g id="pitchTokens"></g>
           </svg>
         </div>
 
-        <!-- Bench -->
-        <div class="bench-bar" id="benchBar" role="button" tabindex="0" aria-label="Bench player">
-          <div class="bench-dot"></div>
-          <span class="bench-label">Bench</span>
-          <span class="bench-player-name" id="benchName">—</span>
-        </div>
       </div>
 
       <!-- Player Detail -->
@@ -470,73 +395,40 @@
       </div>
     </div>
   </main>
-
-  <!-- Opposition -->
-  <section class="opposition-section">
-    <button class="opp-toggle" id="oppToggle" aria-expanded="false">
-      <span>What we expect from them</span>
-      <span class="chevron">&#9660;</span>
-    </button>
-    <div class="opp-content" id="oppContent">
-      <div style="text-align:center; margin-bottom:8px;">
-        <span class="formation-pill" style="font-size:0.85rem; padding:4px 12px;">4-2-3-1</span>
-      </div>
-      <div class="opp-pitch-wrapper">
-        <svg class="pitch-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Opposition formation">
-          <rect width="400" height="600" fill="url(#grass)" rx="6"/>
-          <g stroke="rgba(255,255,255,0.55)" stroke-width="1.5" fill="none">
-            <rect x="20" y="15" width="360" height="570" rx="2"/>
-            <line x1="20" y1="300" x2="380" y2="300"/>
-            <circle cx="200" cy="300" r="50"/>
-            <circle cx="200" cy="300" r="2.5" fill="rgba(255,255,255,0.55)"/>
-            <rect x="100" y="15" width="200" height="80"/>
-            <rect x="150" y="15" width="100" height="30"/>
-            <circle cx="200" cy="70" r="2.5" fill="rgba(255,255,255,0.55)"/>
-            <path d="M 145 95 A 50 50 0 0 1 255 95"/>
-            <rect x="170" y="7" width="60" height="8" rx="1" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
-            <rect x="100" y="505" width="200" height="80"/>
-            <rect x="150" y="555" width="100" height="30"/>
-            <circle cx="200" cy="530" r="2.5" fill="rgba(255,255,255,0.55)"/>
-            <path d="M 145 505 A 50 50 0 0 0 255 505"/>
-            <rect x="170" y="585" width="60" height="8" rx="1" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
-          </g>
-          <g id="oppTokens"></g>
-        </svg>
-      </div>
-    </div>
-  </section>
 </div>
 
 <script>
 // ── Data ──
 const players = {
-  drew:   { name: "Drew",   role: "Goalkeeper",          blurb: "Last line of defence. Hands like superglue and the calm to match. Plays the full 90 because nobody else can be trusted within ten yards of the goalmouth." },
-  ben:    { name: "Ben",    role: "Left Back",           blurb: "Locked in at left-back for 90. Bombs forward at every opportunity, occasionally remembers to come back. Also our chief \u2018MAN ON!\u2019 shouter." },
-  elango: { name: "Elango", role: "Centre Back",         blurb: "The wall. Reads the game two passes ahead. Plays the full 90 without breaking sweat \u2014 we\u2019re starting to suspect he\u2019s not actually mortal." },
-  chris:  { name: "Chris",  role: "Centre Back",         blurb: "Comes on at 15 with composure to spare. The thinking man\u2019s centre-back. Also the gaffer, which is suspicious \u2014 almost like he\u2019s picking himself." },
-  mark:   { name: "Mark",   role: "Utility (CB\u2192RB\u2192RW)", blurb: "Our Swiss Army knife. CB, then a breather, then RB, then RW. Don\u2019t ask Mark which position he plays \u2014 the answer is \u2018whichever one Chris last shouted at me about\u2019." },
-  mehdi:  { name: "Mehdi",  role: "Right Back",          blurb: "Solid, dependable, has never bombed forward in his life \u2014 and that\u2019s why we love him. Takes a quick breather while Mark covers, then back to it." },
-  tim:    { name: "Tim",    role: "Defensive Mid",       blurb: "The pivot. Sits deep, breaks up play, sprays the ball wide. Carries the team for 75 and absolutely earns his rest." },
-  john:   { name: "John",   role: "Right Central Mid",   blurb: "Engine of the midfield. Plays the full 90 without complaint. Will be reminding the WhatsApp group of this for at least three weeks." },
-  jacob:  { name: "Jacob",  role: "Att. Mid \u2192 CM",       blurb: "Our number 10. Operates between the lines, sniffs out through balls, gets in the box. Drops deeper at 75 to help see the game out \u2014 tactical brain mode activated." },
-  fred:   { name: "Fred",   role: "RW \u2192 CAM",            blurb: "Two-footed, two-positioned. Starts on the right wing, takes a breather, returns through the middle as our number 10. Modern football, this." },
-  jordan: { name: "Jordan", role: "Left Wing",           blurb: "Pure wide attacker. Stays high, gets at the full-back, terrorises the right side. Plays the full 90 because no one else can play LW \u2014 lucky for us, he\u2019s good at it." },
-  tommy:  { name: "Tommy",  role: "Striker",             blurb: "Up top, lone wolf. Holds the ball up, brings others into play, finishes anything that drops. Will spend half the game gesturing for service from the wingers." }
+  drew:   { name: "Drew",   role: "Goalkeeper",           blurb: "Goalkeeper. Plays the full 90 minutes." },
+  ben:    { name: "Ben",    role: "Left Back",            blurb: "Left back. Plays the full 90 minutes." },
+  elango: { name: "Elango", role: "Centre Back",          blurb: "Centre back. Plays the full 90 minutes." },
+  chris:  { name: "Chris",  role: "Centre Back",          blurb: "Centre back. Comes on at 15 minutes replacing Mark. Plays the remaining 75 minutes." },
+  mark:   { name: "Mark",   role: "Utility (CB / RB / RW)", blurb: "Starts at CB (0\u201315). Rests (15\u201330). Returns at RB (30\u2013HT). Moves to RW from half-time onwards." },
+  mehdi:  { name: "Mehdi",  role: "Right Back",           blurb: "Right back. Plays 0\u201330 and HT\u201390. Rests 30\u2013HT while Mark covers at RB." },
+  tim:    { name: "Tim",    role: "Central Midfielder",   blurb: "Central midfielder in the deeper role. Plays 0\u201375. Rests from 75 onwards." },
+  john:   { name: "John",   role: "Central Midfielder",   blurb: "Central midfielder. Plays the full 90 minutes." },
+  jacob:  { name: "Jacob",  role: "CAM / CM",             blurb: "Starts as CAM (0\u201360). Rests 60\u201375. Returns as CM from 75 onwards." },
+  fred:   { name: "Fred",   role: "RW / CAM",             blurb: "Starts on the right wing (0\u201330). Rests 30\u201360. Returns as CAM from 60 onwards." },
+  jordan: { name: "Jordan", role: "Left Wing",            blurb: "Left wing. Plays the full 90 minutes." },
+  tommy:  { name: "Tommy",  role: "Striker",              blurb: "Striker. Plays the full 90 minutes." }
 };
 
 const positions = {
   gk:  { x: 200, y: 545, type: "gk",  label: "GK"  },
-  lb:  { x:  60, y: 470, type: "def", label: "LB"  },
-  cb1: { x: 155, y: 490, type: "def", label: "CB"  },
-  cb2: { x: 245, y: 490, type: "def", label: "CB"  },
-  rb:  { x: 340, y: 470, type: "def", label: "RB"  },
-  dm:  { x: 145, y: 370, type: "mid", label: "DM"  },
-  rcm: { x: 255, y: 370, type: "mid", label: "CM"  },
-  lw:  { x:  60, y: 220, type: "att", label: "LW"  },
-  cam: { x: 200, y: 240, type: "att", label: "CAM" },
-  rw:  { x: 340, y: 220, type: "att", label: "RW"  },
-  st:  { x: 200, y:  90, type: "att", label: "ST"  }
+  lb:  { x:  60, y: 470, type: "fb",  label: "LB"  },
+  cb1: { x: 155, y: 490, type: "cb",  label: "CB"  },
+  cb2: { x: 245, y: 490, type: "cb",  label: "CB"  },
+  rb:  { x: 340, y: 470, type: "fb",  label: "RB"  },
+  dm:  { x: 145, y: 370, type: "cm",  label: "CM"  },
+  rcm: { x: 255, y: 370, type: "cm",  label: "CM"  },
+  lw:  { x:  60, y: 220, type: "wg",  label: "LW"  },
+  cam: { x: 200, y: 240, type: "cam", label: "CAM" },
+  rw:  { x: 340, y: 220, type: "wg",  label: "RW"  },
+  st:  { x: 200, y:  90, type: "st",  label: "ST"  }
 };
+
+const BENCH_POS = { x: 200, y: -40 };
 
 const timeline = [
   { id: "fh", short: "FH", name: "Kick-off", subLabel: "0\u201315",  formation: { gk: "drew", lb: "ben", cb1: "mark",  cb2: "elango", rb: "mehdi", dm: "tim",   rcm: "john", lw: "jordan", cam: "jacob", rw: "fred", st: "tommy", bench: "chris" } },
@@ -562,16 +454,43 @@ const opposition = [
 ];
 
 // ── Colour helpers ──
-const typeColor = { gk: "#f59e0b", def: "#3b82f6", mid: "#8b5cf6", att: "#ef4444" };
+const typeColor = {
+  gk:  "#f59e0b",
+  cb:  "#3b82f6",
+  fb:  "#06b6d4",
+  cm:  "#8b5cf6",
+  wg:  "#ec4899",
+  cam: "#f97316",
+  st:  "#ef4444"
+};
 
 function posType(posKey) {
   if (posKey === "bench") return "bench";
   return positions[posKey]?.type || "bench";
 }
 
+// ── Compressed position helpers ──
+const Y_MIN = 90, Y_MAX = 545;
+
+function compressOurPos(pos) {
+  const norm = (pos.y - Y_MIN) / (Y_MAX - Y_MIN);
+  return { x: pos.x, y: 320 + norm * 250 };
+}
+
+function compressOppPos(pos) {
+  const norm = (pos.y - Y_MIN) / (Y_MAX - Y_MIN);
+  return { x: pos.x, y: 280 - norm * 250 };
+}
+
+function getTargetPos(posKey) {
+  const pos = positions[posKey];
+  return showingOpposition ? compressOurPos(pos) : pos;
+}
+
 // ── State ──
 let currentPeriod = 0;
-let selectedPlayer = null;
+let selectedPlayer = "drew";
+let showingOpposition = false;
 
 // ── Scrubber ──
 const scrubberGrid = document.getElementById("scrubberGrid");
@@ -588,84 +507,156 @@ timeline.forEach((period, i) => {
 
 function selectPeriod(idx) {
   if (idx === currentPeriod) return;
-  const prevFormation = timeline[currentPeriod].formation;
   currentPeriod = idx;
 
-  // Update scrubber
   scrubberGrid.querySelectorAll(".scrubber-btn").forEach((btn, i) => {
     btn.classList.toggle("active", i === idx);
     btn.setAttribute("aria-selected", i === idx ? "true" : "false");
   });
 
-  renderPitch(prevFormation);
+  renderPitch();
   updateBench();
   if (selectedPlayer) renderDetail(selectedPlayer);
 }
 
 // ── Pitch rendering ──
 const pitchTokens = document.getElementById("pitchTokens");
+const oppOverlay = document.getElementById("oppOverlay");
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-function renderPitch(prevFormation) {
+function animateToken(g, fromX, fromY, toX, toY, duration, onDone) {
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    const x = fromX + (toX - fromX) * ease;
+    const y = fromY + (toY - fromY) * ease;
+    g.setAttribute("transform", `translate(${x}, ${y})`);
+    if (t < 1) {
+      requestAnimationFrame(step);
+    } else if (onDone) {
+      onDone();
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+function animateOpacity(g, from, to, duration, onDone) {
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    g.style.opacity = from + (to - from) * ease;
+    if (t < 1) {
+      requestAnimationFrame(step);
+    } else if (onDone) {
+      onDone();
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+function getTokenPos(g) {
+  const match = (g.getAttribute("transform") || "").match(/translate\(\s*([-\d.]+)[,\s]+([-\d.]+)/);
+  return match ? { x: parseFloat(match[1]), y: parseFloat(match[2]) } : { x: 0, y: 0 };
+}
+
+function renderPitch() {
   const formation = timeline[currentPeriod].formation;
+
   const existingTokens = {};
   pitchTokens.querySelectorAll(".player-token").forEach(g => {
     existingTokens[g.dataset.player] = g;
   });
 
   const newOnPitch = new Set();
+  const goingOff = {};
 
   for (const [posKey, playerId] of Object.entries(formation)) {
     if (posKey === "bench") continue;
     newOnPitch.add(playerId);
-    const pos = positions[posKey];
-    const color = typeColor[pos.type];
-    const existing = existingTokens[playerId];
+  }
 
-    if (existing) {
-      // Player was on pitch — animate to new position
-      const circle = existing.querySelector(".token-circle");
-      const nameText = existing.querySelector(".token-name");
-      const labelText = existing.querySelector(".token-label");
-
-      existing.style.transition = "transform 350ms ease-out";
-      existing.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
-      circle.setAttribute("fill", color);
-      labelText.textContent = pos.label;
-
-      // Update selection stroke
-      if (playerId === selectedPlayer) {
-        circle.setAttribute("stroke", "#fbbf24");
-        circle.setAttribute("stroke-width", "3");
-        existing.setAttribute("filter", "url(#glow)");
-      } else {
-        circle.setAttribute("stroke", "none");
-        circle.setAttribute("stroke-width", "0");
-        existing.removeAttribute("filter");
-      }
-
-      existing.classList.remove("token-enter", "token-exit");
-      delete existingTokens[playerId];
-    } else {
-      // Player coming on — create and fade in
-      const g = createToken(playerId, pos, color);
-      g.classList.add("token-enter");
-      pitchTokens.appendChild(g);
+  for (const [playerId, g] of Object.entries(existingTokens)) {
+    if (!newOnPitch.has(playerId)) {
+      goingOff[playerId] = g;
     }
   }
 
-  // Players going off — fade out and remove
-  for (const [playerId, g] of Object.entries(existingTokens)) {
-    g.classList.add("token-exit");
-    g.addEventListener("animationend", () => g.remove(), { once: true });
+  const comingOn = {};
+  for (const [posKey, playerId] of Object.entries(formation)) {
+    if (posKey === "bench") continue;
+    if (!existingTokens[playerId]) {
+      comingOn[playerId] = posKey;
+    }
+  }
+
+  const hasSubstitution = Object.keys(goingOff).length > 0 || Object.keys(comingOn).length > 0;
+  const SUB_OFF_DURATION = 400;
+  const SUB_ON_DELAY = hasSubstitution ? 250 : 0;
+  const SUB_ON_DURATION = 400;
+  const MOVE_DURATION = 350;
+
+  // 1. Players going off
+  for (const [playerId, g] of Object.entries(goingOff)) {
+    const cur = getTokenPos(g);
+    g.style.pointerEvents = "none";
+    animateToken(g, cur.x, cur.y, BENCH_POS.x, BENCH_POS.y, SUB_OFF_DURATION);
+    animateOpacity(g, 1, 0, SUB_OFF_DURATION, () => g.remove());
+  }
+
+  // 2. Players staying
+  for (const [posKey, playerId] of Object.entries(formation)) {
+    if (posKey === "bench") continue;
+    const existing = existingTokens[playerId];
+    if (!existing || goingOff[playerId]) continue;
+
+    const target = getTargetPos(posKey);
+    const color = typeColor[positions[posKey].type];
+    const circle = existing.querySelector(".token-circle");
+    const labelText = existing.querySelector(".token-label");
+    const cur = getTokenPos(existing);
+
+    if (Math.abs(cur.x - target.x) > 1 || Math.abs(cur.y - target.y) > 1) {
+      animateToken(existing, cur.x, cur.y, target.x, target.y, MOVE_DURATION);
+    }
+    circle.setAttribute("fill", color);
+    labelText.textContent = positions[posKey].label;
+
+    if (playerId === selectedPlayer) {
+      circle.setAttribute("stroke", "#fbbf24");
+      circle.setAttribute("stroke-width", "3");
+      existing.setAttribute("filter", "url(#glow)");
+    } else {
+      circle.setAttribute("stroke", "none");
+      circle.setAttribute("stroke-width", "0");
+      existing.removeAttribute("filter");
+    }
+  }
+
+  // 3. Players coming on
+  for (const [playerId, posKey] of Object.entries(comingOn)) {
+    const target = getTargetPos(posKey);
+    const color = typeColor[positions[posKey].type];
+    const g = createToken(playerId, positions[posKey], color, BENCH_POS.x, BENCH_POS.y);
+    g.style.opacity = "0";
+    pitchTokens.appendChild(g);
+
+    setTimeout(() => {
+      animateOpacity(g, 0, 1, SUB_ON_DURATION);
+      animateToken(g, BENCH_POS.x, BENCH_POS.y, target.x, target.y, SUB_ON_DURATION);
+    }, SUB_ON_DELAY);
   }
 }
 
-function createToken(playerId, pos, color) {
+function createToken(playerId, pos, color, startX, startY) {
+  const x = startX !== undefined ? startX : pos.x;
+  const y = startY !== undefined ? startY : pos.y;
+
   const g = document.createElementNS(SVG_NS, "g");
   g.classList.add("player-token");
   g.dataset.player = playerId;
-  g.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+  g.setAttribute("transform", `translate(${x}, ${y})`);
   g.setAttribute("tabindex", "0");
   g.setAttribute("role", "button");
   g.setAttribute("aria-label", players[playerId].name);
@@ -715,10 +706,31 @@ function createToken(playerId, pos, color) {
 // ── Bench ──
 const benchBar = document.getElementById("benchBar");
 const benchName = document.getElementById("benchName");
+const benchDot = document.getElementById("benchDot");
+
+function getBenchColor(playerId) {
+  for (let i = currentPeriod; i >= 0; i--) {
+    for (const [posKey, pid] of Object.entries(timeline[i].formation)) {
+      if (pid === playerId && posKey !== "bench") {
+        return typeColor[positions[posKey].type];
+      }
+    }
+  }
+  for (let i = currentPeriod + 1; i < timeline.length; i++) {
+    for (const [posKey, pid] of Object.entries(timeline[i].formation)) {
+      if (pid === playerId && posKey !== "bench") {
+        return typeColor[positions[posKey].type];
+      }
+    }
+  }
+  return "#475569";
+}
 
 function updateBench() {
   const benchPlayerId = timeline[currentPeriod].formation.bench;
   benchName.textContent = players[benchPlayerId].name;
+  benchDot.textContent = players[benchPlayerId].name;
+  benchDot.style.background = getBenchColor(benchPlayerId);
   benchBar.classList.toggle("selected", benchPlayerId === selectedPlayer);
 }
 
@@ -736,7 +748,6 @@ function selectPlayer(playerId) {
   updateTokenSelection();
   updateBench();
 
-  // On mobile, scroll to detail
   if (window.innerWidth < 768) {
     document.getElementById("playerDetail").scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
@@ -764,9 +775,7 @@ function renderDetail(playerId) {
   const p = players[playerId];
   playerDetail.classList.remove("empty");
 
-  // Build journey
-  const journeySegments = timeline.map((period, i) => {
-    // Find what position this player is in during this period
+  const journeySegments = timeline.map((period) => {
     for (const [posKey, pid] of Object.entries(period.formation)) {
       if (pid === playerId) {
         const type = posType(posKey);
@@ -777,8 +786,8 @@ function renderDetail(playerId) {
     return { type: "bench", label: "BENCH" };
   });
 
-  const segHTML = journeySegments.map(s =>
-    `<div class="journey-seg type-${s.type}">${s.label}</div>`
+  const segHTML = journeySegments.map((s, i) =>
+    `<div class="journey-seg type-${s.type}${i === currentPeriod ? ' active' : ''}" data-period="${i}">${s.label}</div>`
   ).join("");
 
   const labelHTML = timeline.map(t => `<span>${t.short}</span>`).join("");
@@ -793,73 +802,113 @@ function renderDetail(playerId) {
     </div>
     <div class="player-blurb">${p.blurb}</div>
   `;
-}
 
-// ── Overview toggle ──
-const overviewToggle = document.getElementById("overviewToggle");
-const overviewText = document.getElementById("overviewText");
-overviewToggle.addEventListener("click", () => {
-  const collapsed = overviewText.classList.toggle("collapsed");
-  overviewToggle.textContent = collapsed ? "Show full overview \u2193" : "Hide overview \u2191";
-  overviewToggle.setAttribute("aria-expanded", !collapsed);
-});
-
-// ── Opposition toggle ──
-const oppToggle = document.getElementById("oppToggle");
-const oppContent = document.getElementById("oppContent");
-oppToggle.addEventListener("click", () => {
-  const open = oppContent.classList.toggle("open");
-  oppToggle.classList.toggle("open", open);
-  oppToggle.setAttribute("aria-expanded", open);
-  if (open) renderOpposition();
-});
-
-// ── Opposition pitch ──
-let oppRendered = false;
-function renderOpposition() {
-  if (oppRendered) return;
-  oppRendered = true;
-  const oppTokens = document.getElementById("oppTokens");
-
-  // Opposition attacks downward, so flip y: use (600 - y)
-  opposition.forEach(opp => {
-    const pos = positions[opp.pos];
-    const color = typeColor[pos.type];
-    const x = pos.x;
-    const y = 600 - pos.y; // flip
-
-    const g = document.createElementNS(SVG_NS, "g");
-    g.style.transform = `translate(${x}px, ${y}px)`;
-
-    const circle = document.createElementNS(SVG_NS, "circle");
-    circle.setAttribute("r", "22");
-    circle.setAttribute("fill", color);
-    circle.setAttribute("opacity", "0.85");
-
-    const name = document.createElementNS(SVG_NS, "text");
-    name.setAttribute("text-anchor", "middle");
-    name.setAttribute("dy", "0.35em");
-    name.setAttribute("fill", "#fff");
-    name.setAttribute("font-size", opp.name.length > 8 ? "9" : "11");
-    name.setAttribute("font-weight", "700");
-    name.setAttribute("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
-    name.textContent = opp.name;
-
-    const label = document.createElementNS(SVG_NS, "text");
-    label.setAttribute("text-anchor", "middle");
-    label.setAttribute("y", "32");
-    label.setAttribute("fill", "rgba(255,255,255,0.6)");
-    label.setAttribute("font-size", "9");
-    label.setAttribute("font-weight", "600");
-    label.setAttribute("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
-    label.textContent = pos.label;
-
-    g.appendChild(circle);
-    g.appendChild(name);
-    g.appendChild(label);
-    oppTokens.appendChild(g);
+  // Make journey segments clickable
+  playerDetail.querySelectorAll(".journey-seg").forEach(seg => {
+    seg.addEventListener("click", () => {
+      const idx = parseInt(seg.dataset.period);
+      if (idx !== currentPeriod) {
+        selectPeriod(idx);
+      }
+    });
   });
 }
+
+// ── Opposition overlay ──
+const oppBtn = document.getElementById("oppBtn");
+
+function toggleOpposition() {
+  showingOpposition = !showingOpposition;
+  oppBtn.textContent = showingOpposition ? "Hide Opposition" : "Show Opposition";
+  oppBtn.classList.toggle("active", showingOpposition);
+
+  const ANIM = 500;
+
+  if (showingOpposition) {
+    // Compress our team into bottom half
+    const formation = timeline[currentPeriod].formation;
+    pitchTokens.querySelectorAll(".player-token").forEach(g => {
+      const playerId = g.dataset.player;
+      // Find this player's position key
+      for (const [posKey, pid] of Object.entries(formation)) {
+        if (pid === playerId && posKey !== "bench") {
+          const target = compressOurPos(positions[posKey]);
+          const cur = getTokenPos(g);
+          animateToken(g, cur.x, cur.y, target.x, target.y, ANIM);
+          break;
+        }
+      }
+    });
+
+    // Show opposition in top half
+    opposition.forEach(opp => {
+      const pos = positions[opp.pos];
+      const target = compressOppPos(pos);
+      const color = typeColor[pos.type];
+
+      const g = document.createElementNS(SVG_NS, "g");
+      g.classList.add("opp-token");
+      g.setAttribute("transform", `translate(${target.x}, ${target.y})`);
+      g.style.opacity = "0";
+
+      const circle = document.createElementNS(SVG_NS, "circle");
+      circle.setAttribute("r", "20");
+      circle.setAttribute("fill", color);
+      circle.setAttribute("opacity", "0.7");
+      circle.setAttribute("stroke", "rgba(255,255,255,0.3)");
+      circle.setAttribute("stroke-width", "1.5");
+
+      const name = document.createElementNS(SVG_NS, "text");
+      name.setAttribute("text-anchor", "middle");
+      name.setAttribute("dy", "0.35em");
+      name.setAttribute("fill", "#fff");
+      name.setAttribute("font-size", opp.name.length > 8 ? "8" : "10");
+      name.setAttribute("font-weight", "600");
+      name.setAttribute("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
+      name.textContent = opp.name;
+
+      const label = document.createElementNS(SVG_NS, "text");
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("y", "30");
+      label.setAttribute("fill", "rgba(255,255,255,0.5)");
+      label.setAttribute("font-size", "8");
+      label.setAttribute("font-weight", "600");
+      label.setAttribute("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
+      label.textContent = pos.label;
+
+      g.appendChild(circle);
+      g.appendChild(name);
+      g.appendChild(label);
+      oppOverlay.appendChild(g);
+
+      // Stagger fade-in
+      setTimeout(() => {
+        animateOpacity(g, 0, 1, 350);
+      }, 150);
+    });
+  } else {
+    // Fade out opposition
+    oppOverlay.querySelectorAll(".opp-token").forEach(g => {
+      animateOpacity(g, 1, 0, 300, () => g.remove());
+    });
+
+    // Expand our team back to full pitch
+    const formation = timeline[currentPeriod].formation;
+    pitchTokens.querySelectorAll(".player-token").forEach(g => {
+      const playerId = g.dataset.player;
+      for (const [posKey, pid] of Object.entries(formation)) {
+        if (pid === playerId && posKey !== "bench") {
+          const target = positions[posKey];
+          const cur = getTokenPos(g);
+          animateToken(g, cur.x, cur.y, target.x, target.y, ANIM);
+          break;
+        }
+      }
+    });
+  }
+}
+
+oppBtn.addEventListener("click", toggleOpposition);
 
 // ── Initial render ──
 function initialRender() {
@@ -875,6 +924,7 @@ function initialRender() {
 }
 
 initialRender();
+renderDetail("drew");
 </script>
 </body>
 </html>
