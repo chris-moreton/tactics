@@ -371,12 +371,12 @@
               <rect x="100" y="15" width="200" height="80"/>
               <rect x="150" y="15" width="100" height="30"/>
               <circle cx="200" cy="70" r="2.5" fill="rgba(255,255,255,0.55)"/>
-              <path d="M 145 95 A 50 50 0 0 1 255 95"/>
+              <path d="M 145 95 A 50 50 0 0 0 255 95"/>
               <rect x="170" y="7" width="60" height="8" rx="1" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
               <rect x="100" y="505" width="200" height="80"/>
               <rect x="150" y="555" width="100" height="30"/>
               <circle cx="200" cy="530" r="2.5" fill="rgba(255,255,255,0.55)"/>
-              <path d="M 145 505 A 50 50 0 0 0 255 505"/>
+              <path d="M 145 505 A 50 50 0 0 1 255 505"/>
               <rect x="170" y="585" width="60" height="8" rx="1" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
             </g>
 
@@ -479,7 +479,7 @@ function compressOurPos(pos) {
 
 function compressOppPos(pos) {
   const norm = (pos.y - Y_MIN) / (Y_MAX - Y_MIN);
-  return { x: pos.x, y: 280 - norm * 250 };
+  return { x: 400 - pos.x, y: 280 - norm * 250 };
 }
 
 function getTargetPos(posKey) {
