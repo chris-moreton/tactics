@@ -19,9 +19,9 @@
       --col-gk: #f59e0b;
       --col-cb: #3b82f6;
       --col-fb: #06b6d4;
-      --col-cm: #8b5cf6;
+      --col-cdm: #6366f1;
+      --col-m: #8b5cf6;
       --col-wg: #ec4899;
-      --col-cam: #f97316;
       --col-st: #ef4444;
       --col-bench: #334155;
     }
@@ -211,6 +211,72 @@
       border-color: #ea580c;
     }
 
+    /* Grid toggle button */
+    .grid-btn {
+      display: block;
+      width: 100%;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      border: 1px solid #8b5cf6;
+      border-radius: 10px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .grid-btn:hover { filter: brightness(1.1); }
+    .grid-btn.active {
+      background: linear-gradient(135deg, #7c3aed, #6d28d9);
+      border-color: #7c3aed;
+    }
+
+    /* Position/time grid */
+    .pos-grid {
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 16px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+    }
+    .pos-grid table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    .pos-grid th, .pos-grid td {
+      padding: 8px 6px;
+      text-align: center;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .pos-grid th {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .pos-grid th.row-header {
+      text-align: left;
+      padding-left: 10px;
+      min-width: 60px;
+    }
+    .pos-grid td.filled {
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.75rem;
+      border-radius: 0;
+    }
+    .pos-grid td.empty {
+      color: var(--border);
+    }
+
     /* Player Detail */
     .player-detail {
       background: var(--card);
@@ -270,9 +336,9 @@
     .journey-seg.type-gk { background: var(--col-gk); }
     .journey-seg.type-cb { background: var(--col-cb); }
     .journey-seg.type-fb { background: var(--col-fb); }
-    .journey-seg.type-cm { background: var(--col-cm); }
+    .journey-seg.type-cdm { background: var(--col-cdm); }
+    .journey-seg.type-m { background: var(--col-m); }
     .journey-seg.type-wg { background: var(--col-wg); }
-    .journey-seg.type-cam { background: var(--col-cam); }
     .journey-seg.type-st { background: var(--col-st); }
     .journey-seg.type-bench { background: var(--col-bench); }
     .journey-labels {
@@ -324,11 +390,14 @@
   <main class="main">
     <div class="main-grid">
       <div>
-        <!-- Show Opposition -->
-        <button class="opp-btn" id="oppBtn">Show Opposition</button>
+        <!-- Toggle buttons row -->
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <button class="opp-btn" id="oppBtn" style="margin-bottom:0">Show Opposition</button>
+          <button class="grid-btn" id="gridBtn" style="margin-bottom:0">Show Rota Grid</button>
+        </div>
 
         <!-- Hint: pitch -->
-        <div class="hint hint-pitch">
+        <div class="hint hint-pitch" id="hintPitch">
           <span class="hint-arrow">&#8595;</span>
           <span>Click a player to see when/if they are subbing</span>
         </div>
@@ -387,6 +456,9 @@
           </svg>
         </div>
 
+        <!-- Position/time grid (hidden by default) -->
+        <div class="pos-grid" id="posGrid" style="display:none"></div>
+
       </div>
 
       <!-- Player Detail -->
@@ -400,18 +472,18 @@
 <script>
 // ── Data ──
 const players = {
-  drew:   { name: "Drew",   role: "Goalkeeper",           blurb: "Goalkeeper. Plays the full 90 minutes." },
-  ben:    { name: "Ben",    role: "Left Back",            blurb: "Left back. Plays the full 90 minutes." },
-  elango: { name: "Elango", role: "Centre Back",          blurb: "Centre back. Plays the full 90 minutes." },
-  chris:  { name: "Chris",  role: "Centre Back",          blurb: "Centre back. Comes on at 15 minutes replacing Mark. Plays the remaining 75 minutes." },
-  mark:   { name: "Mark",   role: "Utility (CB / RB / RW)", blurb: "Starts at CB (0\u201315). Rests (15\u201330). Returns at RB (30\u2013HT). Moves to RW from half-time onwards." },
-  mehdi:  { name: "Mehdi",  role: "Right Back",           blurb: "Right back. Plays 0\u201330 and HT\u201390. Rests 30\u2013HT while Mark covers at RB." },
-  tim:    { name: "Tim",    role: "Central Midfielder",   blurb: "Central midfielder in the deeper role. Plays 0\u201375. Rests from 75 onwards." },
-  john:   { name: "John",   role: "Central Midfielder",   blurb: "Central midfielder. Plays the full 90 minutes." },
-  jacob:  { name: "Jacob",  role: "CAM / CM",             blurb: "Starts as CAM (0\u201360). Rests 60\u201375. Returns as CM from 75 onwards." },
-  fred:   { name: "Fred",   role: "RW / CAM",             blurb: "Starts on the right wing (0\u201330). Rests 30\u201360. Returns as CAM from 60 onwards." },
-  jordan: { name: "Jordan", role: "Left Wing",            blurb: "Left wing. Plays the full 90 minutes." },
-  tommy:  { name: "Tommy",  role: "Striker",              blurb: "Striker. Plays the full 90 minutes." }
+  drew:   { name: "Drew",   role: "Goalkeeper",        blurb: "Goalkeeper. Plays the full 90 minutes." },
+  ben:    { name: "Ben",    role: "Left Back",         blurb: "Left back. Plays the full 90 minutes." },
+  elango: { name: "Elango", role: "Centre Back",       blurb: "Centre back. Plays the full 90 minutes." },
+  chris:  { name: "Chris",  role: "Centre Back",       blurb: "Centre back. Plays 0\u201315, rests 15\u201330, returns from 30 onwards." },
+  mark:   { name: "Mark",   role: "RB \u2192 RW",     blurb: "Right back (0\u2013HT). Rests HT\u201360. Returns at RW from 60 onwards." },
+  andrew: { name: "Andrew", role: "CB \u2192 CDM",    blurb: "Starts on the bench. Comes on at CB (15\u201330), then moves to CDM from 30 onwards." },
+  tim:    { name: "Tim",    role: "CDM \u2192 RB",    blurb: "Plays CDM (0\u201330). Rests 30\u2013HT. Returns at RB from half-time onwards." },
+  john:   { name: "John",   role: "Right Central Mid", blurb: "Midfielder. Plays the full 90 minutes." },
+  jacob:  { name: "Jacob",  role: "Attacking Mid",     blurb: "Attacking midfielder. Plays 0\u201360, rests 60\u201375, returns from 75 onwards." },
+  fred:   { name: "Fred",   role: "RW \u2192 LM",     blurb: "Right wing (0\u201360). Moves to CAM (60\u201375). Rests from 75 onwards." },
+  jordan: { name: "Jordan", role: "Left Wing",         blurb: "Left wing. Plays the full 90 minutes." },
+  tommy:  { name: "Tommy",  role: "Striker",           blurb: "Striker. Plays the full 90 minutes." }
 };
 
 const positions = {
@@ -420,10 +492,10 @@ const positions = {
   cb1: { x: 155, y: 490, type: "cb",  label: "CB"  },
   cb2: { x: 245, y: 490, type: "cb",  label: "CB"  },
   rb:  { x: 340, y: 470, type: "fb",  label: "RB"  },
-  dm:  { x: 145, y: 370, type: "cm",  label: "CM"  },
-  rcm: { x: 255, y: 370, type: "cm",  label: "CM"  },
+  dm:  { x: 145, y: 370, type: "cdm", label: "CDM" },
+  rcm: { x: 255, y: 370, type: "m",   label: "M"   },
   lw:  { x:  60, y: 220, type: "wg",  label: "LW"  },
-  cam: { x: 200, y: 240, type: "cam", label: "CAM" },
+  cam: { x: 200, y: 240, type: "m",   label: "M"   },
   rw:  { x: 340, y: 220, type: "wg",  label: "RW"  },
   st:  { x: 200, y:  90, type: "st",  label: "ST"  }
 };
@@ -431,12 +503,12 @@ const positions = {
 const BENCH_POS = { x: 200, y: -40 };
 
 const timeline = [
-  { id: "fh", short: "FH", name: "Kick-off", subLabel: "0\u201315",  formation: { gk: "drew", lb: "ben", cb1: "mark",  cb2: "elango", rb: "mehdi", dm: "tim",   rcm: "john", lw: "jordan", cam: "jacob", rw: "fred", st: "tommy", bench: "chris" } },
-  { id: "15", short: "15", name: "15\u2032",      subLabel: "Sub 1", formation: { gk: "drew", lb: "ben", cb1: "chris", cb2: "elango", rb: "mehdi", dm: "tim",   rcm: "john", lw: "jordan", cam: "jacob", rw: "fred", st: "tommy", bench: "mark"  } },
-  { id: "30", short: "30", name: "30\u2032",      subLabel: "Sub 2", formation: { gk: "drew", lb: "ben", cb1: "chris", cb2: "elango", rb: "mark",  dm: "tim",   rcm: "john", lw: "jordan", cam: "jacob", rw: "fred", st: "tommy", bench: "mehdi" } },
-  { id: "ht", short: "HT", name: "HT",       subLabel: "Sub 3", formation: { gk: "drew", lb: "ben", cb1: "chris", cb2: "elango", rb: "mehdi", dm: "tim",   rcm: "john", lw: "jordan", cam: "jacob", rw: "mark", st: "tommy", bench: "fred"  } },
-  { id: "60", short: "60", name: "60\u2032",      subLabel: "Sub 4", formation: { gk: "drew", lb: "ben", cb1: "chris", cb2: "elango", rb: "mehdi", dm: "tim",   rcm: "john", lw: "jordan", cam: "fred",  rw: "mark", st: "tommy", bench: "jacob" } },
-  { id: "75", short: "75", name: "75\u2032",      subLabel: "Sub 5", formation: { gk: "drew", lb: "ben", cb1: "chris", cb2: "elango", rb: "mehdi", dm: "jacob", rcm: "john", lw: "jordan", cam: "fred",  rw: "mark", st: "tommy", bench: "tim"   } }
+  { id: "fh", short: "FH", name: "Kick-off", subLabel: "0\u201315",  formation: { gk: "drew", lb: "ben", cb1: "chris",  cb2: "elango", rb: "mark",  dm: "tim",    rcm: "john", lw: "jordan", cam: "jacob", rw: "fred", st: "tommy", bench: "andrew" } },
+  { id: "15", short: "15", name: "15\u2032",      subLabel: "Sub 1", formation: { gk: "drew", lb: "ben", cb1: "andrew", cb2: "elango", rb: "mark",  dm: "tim",    rcm: "john", lw: "jordan", cam: "jacob", rw: "fred", st: "tommy", bench: "chris"  } },
+  { id: "30", short: "30", name: "30\u2032",      subLabel: "Sub 2", formation: { gk: "drew", lb: "ben", cb1: "chris",  cb2: "elango", rb: "mark",  dm: "andrew", rcm: "john", lw: "jordan", cam: "jacob", rw: "fred", st: "tommy", bench: "tim"    } },
+  { id: "ht", short: "HT", name: "HT",       subLabel: "Sub 3", formation: { gk: "drew", lb: "ben", cb1: "chris",  cb2: "elango", rb: "tim",   dm: "andrew", rcm: "john", lw: "jordan", cam: "jacob", rw: "fred", st: "tommy", bench: "mark"   } },
+  { id: "60", short: "60", name: "60\u2032",      subLabel: "Sub 4", formation: { gk: "drew", lb: "ben", cb1: "chris",  cb2: "elango", rb: "tim",   dm: "andrew", rcm: "john", lw: "jordan", cam: "fred",  rw: "mark", st: "tommy", bench: "jacob"  } },
+  { id: "75", short: "75", name: "75\u2032",      subLabel: "Sub 5", formation: { gk: "drew", lb: "ben", cb1: "chris",  cb2: "elango", rb: "tim",   dm: "andrew", rcm: "john", lw: "jordan", cam: "jacob", rw: "mark", st: "tommy", bench: "fred"   } }
 ];
 
 const opposition = [
@@ -458,9 +530,9 @@ const typeColor = {
   gk:  "#f59e0b",
   cb:  "#3b82f6",
   fb:  "#06b6d4",
-  cm:  "#8b5cf6",
+  cdm: "#6366f1",
+  m:   "#8b5cf6",
   wg:  "#ec4899",
-  cam: "#f97316",
   st:  "#ef4444"
 };
 
@@ -517,6 +589,7 @@ function selectPeriod(idx) {
   renderPitch();
   updateBench();
   if (selectedPlayer) renderDetail(selectedPlayer);
+  if (showingGrid) buildGrid();
 }
 
 // ── Pitch rendering ──
@@ -909,6 +982,78 @@ function toggleOpposition() {
 }
 
 oppBtn.addEventListener("click", toggleOpposition);
+
+// ── Position/time grid ──
+const gridBtn = document.getElementById("gridBtn");
+const posGrid = document.getElementById("posGrid");
+const pitchWrapper = document.querySelector(".pitch-wrapper");
+const hintPitch = document.getElementById("hintPitch");
+let showingGrid = false;
+
+const posOrder = ["gk","lb","cb1","cb2","rb","dm","rcm","cam","lw","rw","st","bench"];
+
+function buildGrid() {
+  const rows = posOrder.map(posKey => {
+    const label = posKey === "bench" ? "Bench" : positions[posKey].label;
+    const type = posKey === "bench" ? "bench" : positions[posKey].type;
+    const color = posKey === "bench" ? "#475569" : typeColor[type];
+
+    const cells = timeline.map((period, i) => {
+      const playerId = period.formation[posKey];
+      const prevPlayerId = i > 0 ? timeline[i - 1].formation[posKey] : null;
+      const changed = prevPlayerId !== null && prevPlayerId !== playerId;
+      const name = players[playerId].name;
+      const isActive = i === currentPeriod;
+      const changeBorder = changed ? 'box-shadow:inset 0 0 0 2px #fbbf24;' : '';
+      return `<td class="filled" style="background:${color}${isActive ? '' : '99'};${isActive ? 'outline:2px solid var(--gold);outline-offset:-2px;' : ''}${changeBorder}" data-period="${i}" data-player="${playerId}">${name}</td>`;
+    }).join("");
+
+    return `<tr><th class="row-header" style="border-left:3px solid ${color}">${label}</th>${cells}</tr>`;
+  }).join("");
+
+  const headerCells = timeline.map((t, i) =>
+    `<th${i === currentPeriod ? ' style="color:var(--gold)"' : ''}>${t.short}</th>`
+  ).join("");
+
+  posGrid.innerHTML = `<table><thead><tr><th class="row-header"></th>${headerCells}</tr></thead><tbody>${rows}</tbody></table>`;
+
+  // Make cells clickable
+  posGrid.querySelectorAll("td[data-period]").forEach(td => {
+    td.style.cursor = "pointer";
+    td.addEventListener("click", () => {
+      const idx = parseInt(td.dataset.period);
+      const pid = td.dataset.player;
+      if (idx !== currentPeriod) selectPeriod(idx);
+      selectPlayer(pid);
+      buildGrid(); // refresh highlight
+    });
+  });
+}
+
+function toggleGrid() {
+  showingGrid = !showingGrid;
+  gridBtn.textContent = showingGrid ? "Show Pitch" : "Show Rota Grid";
+  gridBtn.classList.toggle("active", showingGrid);
+
+  if (showingGrid) {
+    // Turn off opposition if on
+    if (showingOpposition) toggleOpposition();
+    oppBtn.style.display = "none";
+    pitchWrapper.style.display = "none";
+    benchBar.style.display = "none";
+    hintPitch.style.display = "none";
+    posGrid.style.display = "block";
+    buildGrid();
+  } else {
+    oppBtn.style.display = "block";
+    pitchWrapper.style.display = "block";
+    benchBar.style.display = "flex";
+    hintPitch.style.display = "flex";
+    posGrid.style.display = "none";
+  }
+}
+
+gridBtn.addEventListener("click", toggleGrid);
 
 // ── Initial render ──
 function initialRender() {
